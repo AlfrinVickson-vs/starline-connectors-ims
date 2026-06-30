@@ -5,9 +5,8 @@ const { Client } = require('pg');
 
 async function setupDatabase() {
   const dbUrl = process.env.DATABASE_URL;
-  if (!dbUrl || dbUrl.includes('localhost') && dbUrl.includes('postgres:postgres')) {
-    console.error('❌ Error: DATABASE_URL is not set or is still the default localhost value in your .env file.');
-    console.log('Please update the DATABASE_URL in your backend/.env file with your Supabase (or other) connection string.');
+  if (!dbUrl) {
+    console.error('❌ Error: DATABASE_URL is not set in your .env file.');
     process.exit(1);
   }
 
@@ -30,7 +29,7 @@ async function setupDatabase() {
     await client.query(sql);
     console.log('🎉 Database schema applied successfully! Admin user created.');
   } catch (err) {
-    console.error('❌ Database setup failed:', err.message);
+    console.error('❌ Database setup failed:', err);
   } finally {
     await client.end();
   }
