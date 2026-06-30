@@ -87,8 +87,11 @@ app.use((err, req, res, next) => {
 });
 
 // ── Start Server ────────────────────────────────────────────
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅  Starline IMS Backend running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
-});
+// Skip listen when deployed on Vercel (serverless functions export the handler directly)
+if (!process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅  Starline IMS Backend running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+  });
+}
 
 module.exports = app;
