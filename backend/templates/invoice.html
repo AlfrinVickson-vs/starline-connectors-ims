@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice {{invoice_number}} — Starline Connectors</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 13px;
+      color: #1e293b;
+      background: #fff;
+      padding: 0;
+    }
+
+    /* ── Header ── */
+    .invoice-header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      color: #fff;
+      padding: 32px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .company-name { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
+    .company-tagline { color: #94a3b8; font-size: 11px; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+    .company-contact { color: #cbd5e1; font-size: 11px; margin-top: 8px; line-height: 1.6; }
+    .invoice-title { text-align: right; }
+    .invoice-title h2 { font-size: 32px; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; color: #e2e8f0; }
+    .invoice-number { font-size: 15px; font-weight: 700; color: #6366f1; margin-top: 6px; }
+    .invoice-date { color: #94a3b8; font-size: 11px; margin-top: 4px; }
+
+    /* ── Accent bar ── */
+    .accent-bar { height: 4px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899); }
+
+    /* ── Body ── */
+    .invoice-body { padding: 36px 40px; }
+
+    /* ── Parties ── */
+    .parties { display: flex; justify-content: space-between; margin-bottom: 32px; gap: 24px; }
+    .party-block { flex: 1; }
+    .party-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; color: #6366f1; margin-bottom: 8px;
+    }
+    .party-name { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+    .party-detail { color: #64748b; font-size: 12px; line-height: 1.7; }
+    .gstin { font-weight: 600; color: #334155; }
+
+    /* ── Status badge ── */
+    .status-section { text-align: right; }
+    .status-badge {
+      display: inline-block; padding: 6px 18px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      background: #dcfce7; color: #166534;
+    }
+
+    /* ── Table ── */
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    .items-table thead tr { background: #1e293b; color: #fff; }
+    .items-table thead th {
+      padding: 12px 14px; text-align: left;
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;
+    }
+    .items-table thead th:last-child,
+    .items-table thead th:nth-child(4),
+    .items-table thead th:nth-child(5),
+    .items-table thead th:nth-child(6) { text-align: right; }
+    .items-table tbody tr { border-bottom: 1px solid #e2e8f0; }
+    .items-table tbody tr:nth-child(even) { background: #f8fafc; }
+    .items-table tbody td { padding: 11px 14px; vertical-align: top; }
+    .items-table tbody td:last-child,
+    .items-table tbody td:nth-child(4),
+    .items-table tbody td:nth-child(5),
+    .items-table tbody td:nth-child(6) { text-align: right; }
+    .item-desc { font-weight: 600; color: #0f172a; }
+    .item-hsn  { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+    /* ── Totals ── */
+    .totals-section { display: flex; justify-content: flex-end; margin-bottom: 32px; }
+    .totals-table { width: 300px; }
+    .totals-table tr td { padding: 7px 0; font-size: 13px; }
+    .totals-table tr td:first-child { color: #64748b; }
+    .totals-table tr td:last-child { text-align: right; font-weight: 600; color: #0f172a; }
+    .totals-table .grand-total td { border-top: 2px solid #1e293b; padding-top: 12px; }
+    .totals-table .grand-total td:first-child { font-size: 15px; font-weight: 700; color: #0f172a; }
+    .totals-table .grand-total td:last-child { font-size: 18px; font-weight: 800; color: #6366f1; }
+
+    /* ── GST Breakdown ── */
+    .gst-label { font-size: 11px; color: #94a3b8; }
+
+    /* ── Footer ── */
+    .invoice-footer {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .footer-note { color: #94a3b8; font-size: 11px; line-height: 1.6; max-width: 340px; }
+    .signature-block { text-align: right; }
+    .signature-line { border-top: 1px solid #1e293b; padding-top: 6px; font-size: 11px; color: #64748b; width: 180px; margin-left: auto; }
+    .company-stamp { font-weight: 700; font-size: 13px; color: #1e293b; margin-bottom: 32px; }
+
+    /* ── Page footer ── */
+    .page-footer {
+      background: #1e293b;
+      color: #94a3b8;
+      text-align: center;
+      font-size: 11px;
+      padding: 12px 40px;
+      margin-top: 24px;
+    }
+
+    @media print {
+      body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ HEADER ══ -->
+  <div class="invoice-header">
+    <div class="company-info">
+      <div class="company-name">Starline Connectors</div>
+      <div class="company-tagline">Precision Engineered Connectors</div>
+      <div class="company-contact">
+        Plot 45, MIDC Industrial Area, Pune – 411026, Maharashtra<br/>
+        GSTIN: 27AAASC1234A1Z5 &nbsp;|&nbsp; CIN: U28999MH2010PTC123456<br/>
+        +91 20 4567 8900 &nbsp;|&nbsp; accounts@starlineconnectors.com
+      </div>
+    </div>
+    <div class="invoice-title">
+      <h2>Invoice</h2>
+      <div class="invoice-number">{{invoice_number}}</div>
+      <div class="invoice-date">Date: {{formatDate invoice_date}}</div>
+    </div>
+  </div>
+
+  <div class="accent-bar"></div>
+
+  <!-- ══ BODY ══ -->
+  <div class="invoice-body">
+
+    <!-- Parties + Status -->
+    <div class="parties">
+      <div class="party-block">
+        <div class="party-label">Bill To</div>
+        <div class="party-name">{{customer_name}}</div>
+        <div class="party-detail">
+          {{customer_address}}<br/>
+          {{#if customer_gstin}}<span class="gstin">GSTIN: {{customer_gstin}}</span>{{/if}}
+        </div>
+      </div>
+      <div class="party-block" style="text-align:right;">
+        <div class="party-label">Invoice Details</div>
+        <div class="party-detail" style="text-align:right; line-height:1.9;">
+          <strong>Invoice #:</strong> {{invoice_number}}<br/>
+          <strong>Date:</strong> {{formatDate invoice_date}}<br/>
+          <strong>State:</strong> {{customer_state}}<br/>
+          <strong>Status:</strong>
+          <span class="status-badge">{{status}}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Line Items Table -->
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th style="width:32px;">#</th>
+          <th>Description / Item</th>
+          <th>HSN</th>
+          <th>Qty</th>
+          <th>Unit Price (₹)</th>
+          <th>GST %</th>
+          <th>Amount (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each line_items}}
+        <tr>
+          <td>{{sno @index}}</td>
+          <td>
+            <div class="item-desc">{{description}}</div>
+            {{#if hsn_code}}<div class="item-hsn">HSN: {{hsn_code}}</div>{{/if}}
+          </td>
+          <td>{{hsn_code}}</td>
+          <td>{{quantity}}</td>
+          <td>{{inr unit_price}}</td>
+          <td>{{gst_rate}}%</td>
+          <td>{{inr line_total}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <!-- Totals -->
+    <div class="totals-section">
+      <table class="totals-table">
+        <tr>
+          <td>Subtotal</td>
+          <td>₹{{inr subtotal}}</td>
+        </tr>
+        {{#if cgst}}
+        <tr>
+          <td class="gst-label">CGST</td>
+          <td>₹{{inr cgst}}</td>
+        </tr>
+        <tr>
+          <td class="gst-label">SGST</td>
+          <td>₹{{inr sgst}}</td>
+        </tr>
+        {{/if}}
+        {{#if igst}}
+        <tr>
+          <td class="gst-label">IGST</td>
+          <td>₹{{inr igst}}</td>
+        </tr>
+        {{/if}}
+        <tr class="grand-total">
+          <td>Total Amount</td>
+          <td>₹{{inr total_amount}}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="invoice-footer">
+      <div class="footer-note">
+        <strong>Terms &amp; Conditions:</strong><br/>
+        Payment due within 30 days of invoice date.<br/>
+        Subject to Pune jurisdiction. E.&amp;O.E.
+      </div>
+      <div class="signature-block">
+        <div class="company-stamp">Starline Connectors</div>
+        <div class="signature-line">Authorised Signatory</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ PAGE FOOTER ══ -->
+  <div class="page-footer">
+    Starline Connectors &nbsp;|&nbsp; Plot 45, MIDC, Pune 411026 &nbsp;|&nbsp; GSTIN: 27AAASC1234A1Z5 &nbsp;|&nbsp; This is a computer-generated invoice.
+  </div>
+
+</body>
+</html>
