@@ -37,6 +37,7 @@ export const authAPI = {
   me:       ()          => api.get('/auth/me'),
   users:    ()          => api.get('/auth/users'),
   toggleUser: (id, is_active) => api.patch(`/auth/users/${id}/status`, { is_active }),
+  updateUser: (id, body)      => api.put(`/auth/users/${id}`, body),
 };
 
 // Inventory
@@ -45,12 +46,14 @@ export const inventoryAPI = {
   byStage:    (stage)  => api.get(`/inventory/stage/${stage}`),
   get:        (id)     => api.get(`/inventory/${id}`),
   create:     (body)   => api.post('/inventory', body),
+  bulkImport: (body)   => api.post('/inventory/bulk', body),
 };
 
 // Stages
 export const stagesAPI = {
-  advance: (itemId, body) => api.post(`/stages/advance/${itemId}`, body),
-  reject:  (itemId, body) => api.post(`/stages/reject/${itemId}`,  body),
+  advance:     (itemId, body) => api.post(`/stages/advance/${itemId}`, body),
+  bulkAdvance: (body)          => api.post('/stages/bulk-advance', body),
+  reject:      (itemId, body) => api.post(`/stages/reject/${itemId}`,  body),
 };
 
 // Finished Goods
@@ -81,4 +84,15 @@ export const reportsAPI = {
   rejectionRate:  ()       => api.get('/reports/rejection-rate'),
   invoicesSummary:()       => api.get('/reports/invoices-summary'),
   throughput:     (days)   => api.get('/reports/throughput', { params: { days } }),
+  inventoryDetail:     () => api.get('/reports/inventory-detail'),
+  productionDetail:    () => api.get('/reports/production-detail'),
+  qualityDetail:       () => api.get('/reports/quality-detail'),
+  finishedGoodsDetail: () => api.get('/reports/finished-goods-detail'),
+};
+
+// Settings
+export const settingsAPI = {
+  get:       ()     => api.get('/settings'),
+  getPublic: ()     => api.get('/settings/public'),
+  update:    (body) => api.put('/settings', body),
 };

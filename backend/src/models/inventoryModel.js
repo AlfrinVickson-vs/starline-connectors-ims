@@ -1,18 +1,57 @@
-const { query } = require('../config/db');
+const { query, getClient } = require('../config/db');
 
 const inventoryModel = {
   /**
    * Create a new inventory item (stage: inventory_entry)
    */
-  async create({ item_name, sku, quantity, unit, received_date, supplier_name, batch_number, notes, created_by }) {
+  async create({ item_name, sku, quantity, unit, received_date, supplier_name, batch_number, notes, variant, created_by }) {
     const { rows } = await query(
       `INSERT INTO inventory_items
-         (item_name, sku, quantity, unit, received_date, supplier_name, batch_number, notes, created_by)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         (item_name, sku, quantity, unit, received_date, supplier_name, batch_number, notes, variant, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        RETURNING *`,
-      [item_name, sku, quantity, unit, received_date, supplier_name, batch_number, notes, created_by]
+      [item_name, sku, quantity, unit, received_date, supplier_name, batch_number, notes, variant, created_by]
     );
     return rows[0];
+  },
+
+  /**
+   * Bulk-insert multiple items within an existing transaction client.
+   * Each item: { item_name, sku, quantity, unit, received_date, supplier_name, batch_number, notes, variant }
+   * @param {Array}  items      - validated item objects
+   * @param {number} created_by - user id
+   * @param {object} client     - pg PoolClient (transaction must be managed by caller)
+   */
+  async bulkCreate(items, created_by, client) {
+    if (!items || items.length === 0) return [];
+
+    const today = new Date().toISOString().split('T')[0];
+    const values = [];
+    const placeholders = items.map((item, i) => {
+      const base = i * 10;
+      values.push(
+        item.item_name,
+        item.sku           || null,
+        parseFloat(item.quantity),
+        item.unit          || 'pcs',
+        item.received_date || today,
+        item.supplier_name || null,
+        item.batch_number  || null,
+        item.notes         || null,
+        item.variant        || null,
+        created_by
+      );
+      return `($${base + 1},$${base + 2},$${base + 3},$${base + 4},$${base + 5},$${base + 6},$${base + 7},$${base + 8},$${base + 9},$${base + 10})`;
+    });
+
+    const { rows } = await client.query(
+      `INSERT INTO inventory_items
+         (item_name, sku, quantity, unit, received_date, supplier_name, batch_number, notes, variant, created_by)
+       VALUES ${placeholders.join(',')}
+       RETURNING *`,
+      values
+    );
+    return rows;
   },
 
   /**
@@ -86,6 +125,31 @@ const inventoryModel = {
        WHERE id = $3
        RETURNING *`,
       [current_stage, status, id]
+    );
+    return rows[0] || null;
+  },
+
+  /**
+   * Partial-approval update (QC Outgoing only).
+   * Simultaneously sets approved qty, rejected qty, stage and status.
+   * @param {number} id
+   * @param {object} opts
+   * @param {number} opts.approved_qty    - quantity that passed QC
+   * @param {number} opts.rejected_qty    - quantity that failed QC
+   * @param {string} opts.current_stage   - new stage (finished_goods)
+   * @param {string} opts.status          - 'approved'
+   */
+  async updateQuantityAndStage(id, { approved_qty, rejected_qty, current_stage, status }) {
+    const { rows } = await query(
+      `UPDATE inventory_items
+       SET quantity          = $1,
+           rejected_quantity = $2,
+           current_stage     = $3,
+           status            = $4,
+           updated_at        = NOW()
+       WHERE id = $5
+       RETURNING *`,
+      [approved_qty, rejected_qty, current_stage, status, id]
     );
     return rows[0] || null;
   },

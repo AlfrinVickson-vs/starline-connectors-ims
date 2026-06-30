@@ -1,11 +1,13 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useCompany } from '../../context/CompanyContext';
 import {
   LayoutDashboard, PackageOpen, ShieldCheck, Factory,
-  Archive, FileText, BarChart3, LogOut, Zap,
+  Archive, FileText, BarChart3, LogOut, Zap, Settings
 } from 'lucide-react';
 
 const ROLE_LABELS = {
+  super_admin:         'Super Administrator',
   admin:               'Administrator',
   inventory_manager:   'Inventory Manager',
   qc_inspector:        'QC Inspector',
@@ -21,13 +23,19 @@ const NAV_ITEMS = [
   { to: '/finished',  icon: Archive,         label: 'Finished Goods', roles: ['admin','inventory_manager'] },
   { to: '/invoices',  icon: FileText,        label: 'Invoices',       roles: ['admin'] },
   { to: '/reports',   icon: BarChart3,       label: 'Reports',        roles: ['admin','inventory_manager'] },
+  { to: '/settings',  icon: Settings,        label: 'Settings',       roles: ['super_admin'] },
 ];
 
 const Sidebar = ({ onClose }) => {
   const { user, logout } = useAuth();
+  const { company_name, company_logo } = useCompany();
+  
+  const nameParts = company_name ? company_name.split(' ') : ['Starline', 'Connectors'];
+  const firstName = nameParts[0];
+  const restName = nameParts.slice(1).join(' ');
 
   const visible = NAV_ITEMS.filter(
-    (item) => !item.roles || item.roles.includes(user?.role)
+    (item) => !item.roles || item.roles.includes(user?.role) || user?.role === 'super_admin'
   );
 
   return (
@@ -35,12 +43,16 @@ const Sidebar = ({ onClose }) => {
       {/* Logo */}
       <div className="px-6 py-5 border-b border-slate-800/60">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-violet-600 flex items-center justify-center shadow-lg shadow-brand-600/30">
-            <Zap className="w-5 h-5 text-white" />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-violet-600 flex items-center justify-center shadow-lg shadow-brand-600/30 overflow-hidden">
+            {company_logo ? (
+              <img src={company_logo} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              <Zap className="w-5 h-5 text-white" />
+            )}
           </div>
-          <div>
-            <p className="text-sm font-bold text-slate-100 leading-tight">Starline</p>
-            <p className="text-xs text-slate-500">Connectors IMS</p>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-slate-100 leading-tight truncate">{firstName}</p>
+            <p className="text-xs text-slate-500 truncate">{restName || 'IMS'}</p>
           </div>
         </div>
       </div>

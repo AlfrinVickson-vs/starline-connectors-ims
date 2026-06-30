@@ -6,9 +6,10 @@ const ctrl = require('../controllers/inventoryController');
 // All inventory routes require authentication
 router.use(authenticate);
 
-router.post('/',                  requireRole('inventory_manager', 'admin'), ctrl.createItem);
-router.get('/',                   ctrl.listItems);
-router.get('/stage/:stage',       ctrl.getItemsByStage);
-router.get('/:id',                ctrl.getItem);
+router.post('/',             requireRole('inventory_manager', 'admin'), ctrl.createItem);
+router.post('/bulk',         requireRole('inventory_manager', 'admin'), ctrl.bulkCreateItems);
+router.get('/',              ctrl.listItems);
+router.get('/stage/:stage',  ctrl.getItemsByStage);
+router.get('/:id',           ctrl.getItem);
 
 module.exports = router;

@@ -13,6 +13,14 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      setInterval(() => {
+        const root = document.documentElement;
+        console.log("HTML classes:", root.className);
+        console.log("slate-950 RGB:", getComputedStyle(root).getPropertyValue('--color-slate-950'));
+        console.log("body BG:", getComputedStyle(document.body).backgroundColor);
+      }, 2000);
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCompany } from '../context/CompanyContext';
 import toast from 'react-hot-toast';
 import { Zap, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const { login } = useAuth();
+  const { company_name, company_logo } = useCompany();
   const navigate  = useNavigate();
   const [form, setForm]     = useState({ email: '', password: '' });
   const [showPw, setShowPw] = useState(false);
@@ -35,11 +37,15 @@ const Login = () => {
         </div>
 
         <div className="relative z-10 text-center">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-brand-500 to-violet-600 flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-brand-600/40">
-            <Zap className="w-10 h-10 text-white" />
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-brand-500 to-violet-600 flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-brand-600/40 overflow-hidden">
+            {company_logo ? (
+              <img src={company_logo} alt="Company Logo" className="w-full h-full object-cover" />
+            ) : (
+              <Zap className="w-10 h-10 text-slate-100" />
+            )}
           </div>
-          <h1 className="text-4xl font-black text-white mb-3 tracking-tight">
-            Starline<br />
+          <h1 className="text-4xl font-black text-slate-100 mb-3 tracking-tight">
+            {company_name}<br />
             <span className="text-gradient">Connectors</span>
           </h1>
           <p className="text-slate-400 text-lg font-light">Inventory Management System</p>
@@ -65,11 +71,15 @@ const Login = () => {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 flex items-center justify-center overflow-hidden">
+              {company_logo ? (
+                <img src={company_logo} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <Zap className="w-5 h-5 text-slate-100" />
+              )}
             </div>
             <div>
-              <p className="font-bold text-white">Starline Connectors</p>
+              <p className="font-bold text-slate-100">{company_name}</p>
               <p className="text-xs text-slate-500">IMS</p>
             </div>
           </div>

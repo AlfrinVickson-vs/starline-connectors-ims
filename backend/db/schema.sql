@@ -14,7 +14,8 @@ DO $$ BEGIN
     'inventory_manager',
     'qc_inspector',
     'production_manager',
-    'admin'
+    'admin',
+    'super_admin'
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
@@ -56,6 +57,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash VARCHAR(255)        NOT NULL,
   role          user_role           NOT NULL DEFAULT 'inventory_manager',
   is_active     BOOLEAN             NOT NULL DEFAULT TRUE,
+  current_session_id VARCHAR(255),
   created_at    TIMESTAMPTZ         NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMPTZ         NOT NULL DEFAULT NOW()
 );
@@ -78,6 +80,8 @@ CREATE TABLE IF NOT EXISTS inventory_items (
   supplier_name   VARCHAR(255),
   batch_number    VARCHAR(100),
   notes           TEXT,
+  rejected_quantity NUMERIC(12, 4) NOT NULL DEFAULT 0,
+  variant         VARCHAR(100),
   created_by      INTEGER             NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
   created_at      TIMESTAMPTZ         NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ         NOT NULL DEFAULT NOW()
@@ -223,7 +227,34 @@ INSERT INTO users (name, email, password_hash, role)
 VALUES (
   'System Admin',
   'admin@starlineconnectors.com',
-  '$2b$10$rQmK8YJxQvD3Fz1e5KJ.A.oZsXqTcHn4bW3PJdHYk5m7vCuQ2KyuO',
+  '$2a$10$y4fUksZ7eEWwDFD/8KxUee/ytRUmEeJBiybo//u/LmlNm1duTKFqu',
   'admin'
 )
 ON CONFLICT (email) DO NOTHING;
+
+-- Seed default Super Admin user (password: Admin@1234)
+INSERT INTO users (name, email, password_hash, role)
+VALUES (
+  'Super Admin',
+  'superadmin@starlineconnectors.com',
+  '$2a$10$y4fUksZ7eEWwDFD/8KxUee/ytRUmEeJBiybo//u/LmlNm1duTKFqu',
+  'super_admin'
+)
+ON CONFLICT (email) DO NOTHING;
+
+-- ============================================================
+-- TABLE: company_settings
+-- ============================================================
+CREATE TABLE IF NOT EXISTS company_settings (
+  id              INTEGER PRIMARY KEY DEFAULT 1,
+  company_name    VARCHAR(255) NOT NULL DEFAULT 'Starline Connectors',
+  company_address TEXT NOT NULL DEFAULT 'Plot No. 45, Industrial Area, Sector 5, Gandhinagar, Gujarat - 382010',
+  company_email   VARCHAR(255) NOT NULL DEFAULT 'info@starlineconnectors.com',
+  company_contact VARCHAR(255) NOT NULL DEFAULT '+91 98765 43210',
+  company_gstin   VARCHAR(100) NOT NULL DEFAULT '27AAASC1234A1Z5'
+);
+
+INSERT INTO company_settings (id, company_name, company_address, company_email, company_contact, company_gstin)
+VALUES (1, 'Starline Connectors', 'Plot No. 45, Industrial Area, Sector 5, Gandhinagar, Gujarat - 382010', 'info@starlineconnectors.com', '+91 98765 43210', '27AAASC1234A1Z5')
+ON CONFLICT (id) DO NOTHING;
+

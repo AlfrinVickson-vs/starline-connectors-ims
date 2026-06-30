@@ -57,8 +57,76 @@ const throughput = async (req, res) => {
      WHERE changed_at >= NOW() - INTERVAL '${days} days'
      GROUP BY DATE(changed_at)
      ORDER BY date ASC`
-  );
+    );
   return res.json({ success: true, data: rows });
 };
 
-module.exports = { stageSummary, avgTimePerStage, rejectionRate, invoicesSummary, throughput };
+// GET /api/reports/inventory-detail
+const inventoryDetailReport = async (req, res) => {
+  const { rows } = await query(`
+    SELECT 
+      i.id, i.item_name, i.sku, i.variant, i.quantity, i.unit, i.status, i.current_stage, i.received_date, 
+      u.name AS created_by_name, i.created_by
+    FROM inventory_items i
+    JOIN users u ON u.id = i.created_by
+    WHERE i.current_stage IN ('inventory_entry', 'qc_incoming')
+    ORDER BY i.created_at DESC
+  `);
+  return res.json({ success: true, data: rows });
+};
+
+// GET /api/reports/production-detail
+const productionDetailReport = async (req, res) => {
+  const { rows } = await query(`
+    SELECT 
+      i.id, i.item_name, i.sku, i.variant, i.quantity, i.unit, i.status, i.updated_at AS started_at,
+      u.name AS created_by_name, i.created_by
+    FROM inventory_items i
+    JOIN users u ON u.id = i.created_by
+    WHERE i.current_stage = 'production'
+    ORDER BY i.updated_at DESC
+  `);
+  return res.json({ success: true, data: rows });
+};
+
+// GET /api/reports/quality-detail
+const qualityDetailReport = async (req, res) => {
+  const { rows } = await query(`
+    SELECT 
+      sh.id, sh.item_id, sh.from_stage, sh.to_stage, sh.status, sh.comments, sh.changed_at,
+      i.item_name, i.sku, i.variant, i.quantity, i.unit,
+      u.name AS operator_name, u.role AS operator_role
+    FROM stage_history sh
+    JOIN inventory_items i ON i.id = sh.item_id
+    JOIN users u ON u.id = sh.changed_by
+    WHERE sh.to_stage IN ('qc_incoming', 'qc_outgoing', 'production', 'finished_goods') 
+      AND sh.from_stage IN ('inventory_entry', 'qc_incoming', 'production', 'qc_outgoing')
+    ORDER BY sh.changed_at DESC
+  `);
+  return res.json({ success: true, data: rows });
+};
+
+// GET /api/reports/finished-goods-detail
+const finishedGoodsDetailReport = async (req, res) => {
+  const { rows } = await query(`
+    SELECT 
+      fg.id, fg.quantity, fg.approved_date, fg.batch_reference, fg.ready_for_invoice,
+      i.item_name, i.sku, i.variant, i.unit
+    FROM finished_goods fg
+    JOIN inventory_items i ON i.id = fg.item_id
+    ORDER BY fg.approved_date DESC
+  `);
+  return res.json({ success: true, data: rows });
+};
+
+module.exports = {
+  stageSummary,
+  avgTimePerStage,
+  rejectionRate,
+  invoicesSummary,
+  throughput,
+  inventoryDetailReport,
+  productionDetailReport,
+  qualityDetailReport,
+  finishedGoodsDetailReport
+};

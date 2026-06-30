@@ -17,7 +17,7 @@ const userModel = {
    */
   async findById(id) {
     const { rows } = await query(
-      'SELECT id, name, email, role, is_active, created_at FROM users WHERE id = $1',
+      'SELECT id, name, email, role, is_active, current_session_id, created_at FROM users WHERE id = $1',
       [id]
     );
     return rows[0] || null;
@@ -66,6 +66,41 @@ const userModel = {
       [isActive, id]
     );
     return rows[0];
+  },
+
+  /**
+   * Update the active session ID for single-device logins
+   */
+  async updateSessionId(id, sessionId) {
+    const { rows } = await query(
+      'UPDATE users SET current_session_id = $1 WHERE id = $2 RETURNING id, name, email, role, is_active, current_session_id',
+      [sessionId, id]
+    );
+    return rows[0];
+  },
+  /**
+   * Update user details (Name, Email, Role, and optionally password_hash)
+   */
+  async update(id, { name, email, role, password_hash }) {
+    if (password_hash) {
+      const { rows } = await query(
+        `UPDATE users
+         SET name = $1, email = $2, role = $3, password_hash = $4, updated_at = NOW()
+         WHERE id = $5
+         RETURNING id, name, email, role, is_active, created_at`,
+        [name, email, role, password_hash, id]
+      );
+      return rows[0];
+    } else {
+      const { rows } = await query(
+        `UPDATE users
+         SET name = $1, email = $2, role = $3, updated_at = NOW()
+         WHERE id = $4
+         RETURNING id, name, email, role, is_active, created_at`,
+        [name, email, role, id]
+      );
+      return rows[0];
+    }
   },
 };
 

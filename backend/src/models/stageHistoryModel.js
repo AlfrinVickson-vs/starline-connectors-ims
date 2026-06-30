@@ -34,14 +34,20 @@ const stageHistoryModel = {
    */
   async avgTimePerStage() {
     const { rows } = await query(
-      `SELECT
-         from_stage AS stage,
-         AVG(EXTRACT(EPOCH FROM (
-           LEAD(changed_at) OVER (PARTITION BY item_id ORDER BY changed_at) - changed_at
-         )) / 3600) AS avg_hours
-       FROM stage_history
-       WHERE from_stage IS NOT NULL
-       GROUP BY from_stage`
+      `WITH stage_durations AS (
+         SELECT
+           item_id,
+           from_stage AS stage,
+           changed_at,
+           LEAD(changed_at) OVER (PARTITION BY item_id ORDER BY changed_at) AS next_changed_at
+         FROM stage_history
+       )
+       SELECT
+         stage,
+         AVG(EXTRACT(EPOCH FROM (next_changed_at - changed_at)) / 3600) AS avg_hours
+       FROM stage_durations
+       WHERE stage IS NOT NULL AND next_changed_at IS NOT NULL
+       GROUP BY stage`
     );
     return rows;
   },

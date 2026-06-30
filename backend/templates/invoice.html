@@ -124,12 +124,12 @@
   <!-- ══ HEADER ══ -->
   <div class="invoice-header">
     <div class="company-info">
-      <div class="company-name">Starline Connectors</div>
+      <div class="company-name">{{company.company_name}}</div>
       <div class="company-tagline">Precision Engineered Connectors</div>
       <div class="company-contact">
-        Plot 45, MIDC Industrial Area, Pune – 411026, Maharashtra<br/>
-        GSTIN: 27AAASC1234A1Z5 &nbsp;|&nbsp; CIN: U28999MH2010PTC123456<br/>
-        +91 20 4567 8900 &nbsp;|&nbsp; accounts@starlineconnectors.com
+        {{company.company_address}}<br/>
+        GSTIN: {{company.company_gstin}} &nbsp;|&nbsp; CIN: U28999MH2010PTC123456<br/>
+        {{company.company_contact}} &nbsp;|&nbsp; {{company.company_email}}
       </div>
     </div>
     <div class="invoice-title">
@@ -235,7 +235,7 @@
         Subject to Pune jurisdiction. E.&amp;O.E.
       </div>
       <div class="signature-block">
-        <div class="company-stamp">Starline Connectors</div>
+        <div class="company-stamp">{{company.company_name}}</div>
         <div class="signature-line">Authorised Signatory</div>
       </div>
     </div>
@@ -244,7 +244,7 @@
 
   <!-- ══ PAGE FOOTER ══ -->
   <div class="page-footer">
-    Starline Connectors &nbsp;|&nbsp; Plot 45, MIDC, Pune 411026 &nbsp;|&nbsp; GSTIN: 27AAASC1234A1Z5 &nbsp;|&nbsp; This is a computer-generated invoice.
+    {{company.company_name}} &nbsp;|&nbsp; {{company.company_address}} &nbsp;|&nbsp; This is a computer-generated invoice.
   </div>
 
 </body>

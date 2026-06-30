@@ -9,6 +9,7 @@ import Production    from './pages/Production';
 import FinishedGoods from './pages/FinishedGoods';
 import Invoices      from './pages/Invoices';
 import Reports       from './pages/Reports';
+import Settings      from './pages/Settings';
 
 // Guard: redirect to login if not authenticated
 const PrivateRoute = ({ children }) => {
@@ -58,6 +59,7 @@ const App = () => {
         <Route path="finished"   element={<FinishedGoods />} />
         <Route path="invoices"   element={<Invoices />} />
         <Route path="reports"    element={<Reports />} />
+        <Route path="settings"   element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -3,8 +3,36 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-slate-50: 248 250 252;
+    --color-slate-100: 241 245 249;
+    --color-slate-200: 226 232 240;
+    --color-slate-300: 203 213 225;
+    --color-slate-400: 148 163 184;
+    --color-slate-500: 100 116 139;
+    --color-slate-600: 71 85 105;
+    --color-slate-700: 51 65 85;
+    --color-slate-800: 30 41 59;
+    --color-slate-900: 15 23 42;
+    --color-slate-950: 2 6 23;
+  }
+
+  html.light {
+    --color-slate-50: 15 23 42;
+    --color-slate-100: 30 41 59;
+    --color-slate-200: 51 65 85;
+    --color-slate-300: 71 85 105;
+    --color-slate-400: 100 116 139;
+    --color-slate-500: 148 163 184;
+    --color-slate-600: 203 213 225;
+    --color-slate-700: 226 232 240;
+    --color-slate-800: 241 245 249;
+    --color-slate-900: 248 250 252;
+    --color-slate-950: 255 255 255;
+  }
+
   * {
-    @apply border-border;
+    @apply border-slate-800;
   }
   body {
     @apply bg-slate-950 text-slate-100 font-sans antialiased;
@@ -96,7 +124,7 @@
 
   /* Glassmorphism panel */
   .glass {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl;
+    @apply bg-slate-500/10 backdrop-blur-md border border-slate-500/20 rounded-2xl;
   }
 }
 

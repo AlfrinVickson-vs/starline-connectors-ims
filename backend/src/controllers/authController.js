@@ -1,13 +1,14 @@
 const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
+const crypto = require('crypto');
 const userModel = require('../models/userModel');
 
 /**
- * Sign a JWT for a user record
+ * Sign a JWT for a user record including active session_id
  */
-const signToken = (user) =>
+const signToken = (user, sessionId) =>
   jwt.sign(
-    { id: user.id, email: user.email, role: user.role, name: user.name },
+    { id: user.id, email: user.email, role: user.role, name: user.name, session_id: sessionId },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
@@ -26,11 +27,14 @@ const register = async (req, res) => {
   }
 
   const password_hash = await bcrypt.hash(password, 10);
-  const validRoles = ['inventory_manager', 'qc_inspector', 'production_manager', 'admin'];
+  const validRoles = ['inventory_manager', 'qc_inspector', 'production_manager', 'admin', 'super_admin'];
   const assignedRole = validRoles.includes(role) ? role : 'inventory_manager';
 
   const user = await userModel.create({ name, email, password_hash, role: assignedRole });
-  const token = signToken(user);
+  const sessionId = crypto.randomUUID();
+  await userModel.updateSessionId(user.id, sessionId);
+  
+  const token = signToken(user, sessionId);
 
   return res.status(201).json({
     success: true,
@@ -58,7 +62,10 @@ const login = async (req, res) => {
     return res.status(401).json({ success: false, message: 'Invalid credentials' });
   }
 
-  const token = signToken(user);
+  const sessionId = crypto.randomUUID();
+  await userModel.updateSessionId(user.id, sessionId);
+  
+  const token = signToken(user, sessionId);
 
   return res.json({
     success: true,
@@ -90,4 +97,43 @@ const toggleUserStatus = async (req, res) => {
   return res.json({ success: true, user });
 };
 
-module.exports = { register, login, getProfile, listUsers, toggleUserStatus };
+// PUT /api/auth/users/:id  (super admin only)
+const updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, role, password } = req.body;
+
+  if (!name || !email || !role) {
+    return res.status(400).json({ success: false, message: 'Name, email and role are required' });
+  }
+
+  const validRoles = ['inventory_manager', 'qc_inspector', 'production_manager', 'admin', 'super_admin'];
+  if (!validRoles.includes(role)) {
+    return res.status(400).json({ success: false, message: 'Invalid role assignment' });
+  }
+
+  // Check if email already registered by another user
+  const existing = await userModel.findByEmail(email);
+  if (existing && existing.id !== parseInt(id, 10)) {
+    return res.status(409).json({ success: false, message: 'Email address already in use by another user' });
+  }
+
+  try {
+    const updateData = { name, email, role };
+    if (password && password.trim().length >= 6) {
+      updateData.password_hash = await bcrypt.hash(password, 10);
+    }
+
+    const user = await userModel.update(parseInt(id, 10), updateData);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // Force terminate previous session on detail/password change
+    const newSessionId = crypto.randomUUID();
+    await userModel.updateSessionId(user.id, newSessionId);
+
+    return res.json({ success: true, message: 'User updated successfully', user });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+module.exports = { register, login, getProfile, listUsers, toggleUserStatus, updateUser };

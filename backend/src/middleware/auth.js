@@ -1,11 +1,12 @@
 const jwt = require('jsonwebtoken');
+const userModel = require('../models/userModel');
 
 /**
- * JWT authentication middleware.
+ * JWT authentication middleware with single-session enforcement.
  * Expects header: Authorization: Bearer <token>
  * Attaches decoded payload to req.user on success.
  */
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -15,7 +16,22 @@ const authenticate = (req, res, next) => {
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = decoded; // { id, email, role, name }
+    // Enforce single-device login
+    const user = await userModel.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'User not found' });
+    }
+    if (!user.is_active) {
+      return res.status(401).json({ success: false, message: 'Account has been deactivated' });
+    }
+
+    // Only validate if a session_id is present (allows transitional state)
+    if (decoded.session_id && user.current_session_id !== decoded.session_id) {
+      return res.status(401).json({ success: false, message: 'Session expired: logged in from another location' });
+    }
+
+    // Use the role from the database, not the potentially stale token
+    req.user = { ...decoded, role: user.role };
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError') {

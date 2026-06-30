@@ -11,7 +11,7 @@ const requireRole = (...roles) => (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ success: false, message: 'Not authenticated' });
   }
-  if (!roles.includes(req.user.role)) {
+  if (!roles.includes(req.user.role) && req.user.role !== 'super_admin') {
     return res.status(403).json({
       success: false,
       message: `Access denied. Required role(s): ${roles.join(', ')}`,
@@ -38,7 +38,7 @@ const STAGE_ROLE_MAP = {
  */
 const canActOnStage = (userRole, stage) => {
   const allowed = STAGE_ROLE_MAP[stage];
-  return userRole === allowed || userRole === 'admin';
+  return userRole === allowed || userRole === 'admin' || userRole === 'super_admin';
 };
 
 module.exports = { requireRole, canActOnStage, STAGE_ROLE_MAP };

@@ -3,6 +3,7 @@ const finishedGoodsModel = require('../models/finishedGoodsModel');
 const { generateInvoicePdf } = require('../services/pdfService');
 const { uploadInvoicePdf, getSignedUrl } = require('../services/gcsService');
 const { sendInvoiceEmail } = require('../services/emailService');
+const { query } = require('../config/db');
 
 // Company home state for GST calculation (intra = CGST+SGST, inter = IGST)
 const COMPANY_STATE = process.env.COMPANY_STATE || 'Maharashtra';
@@ -71,7 +72,9 @@ const createInvoice = async (req, res) => {
   const invoice = await invoiceModel.create({ invoice: invoiceData, lineItems: processedLines });
 
   // Generate PDF
-  const fullInvoice = { ...invoice, line_items: processedLines };
+  const companyRes = await query('SELECT * FROM company_settings WHERE id = 1');
+  const company = companyRes.rows[0];
+  const fullInvoice = { ...invoice, line_items: processedLines, company };
   const pdfBuffer = await generateInvoicePdf(fullInvoice);
 
   // Upload to GCS

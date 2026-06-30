@@ -6,6 +6,7 @@ router.use(authenticate);
 
 // Advance to next stage (role validation inside controller)
 router.post('/advance/:itemId', ctrl.advanceStage);
+router.post('/bulk-advance',    ctrl.bulkAdvanceStages);
 // Reject at QC stage (role validation inside controller)
 router.post('/reject/:itemId',  ctrl.rejectItem);
 

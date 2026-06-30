@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { inventoryAPI, reportsAPI } from '../api/apiService';
 import StatsCard from '../components/UI/StatsCard';
 import Badge from '../components/UI/Badge';
-import { PackageOpen, ShieldCheck, Factory, Archive, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { PackageOpen, ShieldCheck, Factory, Archive, Clock, CheckCircle, XCircle, AlertCircle, Settings } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const STAGE_CONFIG = {
@@ -76,6 +77,36 @@ const Dashboard = () => {
           <StatsCard key={card.title} {...card} loading={loadingSummary} />
         ))}
       </div>
+
+      {/* Super Admin Quick Actions */}
+      {user?.role === 'super_admin' && (
+        <div className="card p-5 border-brand-500/30 shadow-lg shadow-brand-500/10">
+          <h3 className="section-title flex items-center gap-2 mb-4">
+            <Settings size={18} className="text-brand-400" /> Super Admin Access
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Link to="/settings" className="flex items-center gap-4 p-4 rounded-xl bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 transition-colors">
+              <div className="w-12 h-12 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-400">
+                <Settings size={24} />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-slate-200">Company Settings</h4>
+                <p className="text-xs text-slate-500 mt-1">Configure company GSTIN, name, and details.</p>
+              </div>
+            </Link>
+            
+            <Link to="/settings" className="flex items-center gap-4 p-4 rounded-xl bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 transition-colors">
+              <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                <ShieldCheck size={24} />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-slate-200">User Management</h4>
+                <p className="text-xs text-slate-500 mt-1">Add users, manage privileges, and reset passwords.</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Pending Items for this role */}
       <div className="card">

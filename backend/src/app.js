@@ -12,6 +12,7 @@ const stagesRoutes        = require('./routes/stages');
 const invoicesRoutes      = require('./routes/invoices');
 const notificationsRoutes = require('./routes/notifications');
 const reportsRoutes       = require('./routes/reports');
+const settingsRoutes      = require('./routes/settings');
 const finishedGoodsModel  = require('./models/finishedGoodsModel');
 const { authenticate }    = require('./middleware/auth');
 
@@ -40,7 +41,7 @@ app.use(limiter);
 // Stricter limit for auth endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 5000,
   message: { success: false, message: 'Too many auth attempts, please try again later.' },
 });
 
@@ -56,6 +57,7 @@ app.use('/api/stages',        stagesRoutes);
 app.use('/api/invoices',      invoicesRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/reports',       reportsRoutes);
+app.use('/api/settings',      settingsRoutes);
 
 // GET /api/finished-goods — convenience endpoint
 app.get('/api/finished-goods', authenticate, async (req, res) => {
