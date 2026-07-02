@@ -80,9 +80,7 @@ app.use((err, req, res, next) => {
   const statusCode = err.statusCode || err.status || 500;
   res.status(statusCode).json({
     success: false,
-    message: process.env.NODE_ENV === 'production'
-      ? 'An internal error occurred'
-      : err.message,
+    message: err.message || 'An internal error occurred',
   });
 });
 
